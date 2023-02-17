@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../Contect/AuthContect';
+import { AuthContext } from '../Contect/AuthContext';
 
 const SidebarMenu = (props) => {
     const {logOutUser} = useContext(AuthContext);

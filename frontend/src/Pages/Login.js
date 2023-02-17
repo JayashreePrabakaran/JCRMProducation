@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import { AuthContext } from '../Contect/AuthContect';
+import { AuthContext } from '../Contect/AuthContext';
 
 
 const Login = (props) => {

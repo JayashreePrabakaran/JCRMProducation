@@ -5,7 +5,7 @@ import Dashboard from './Pages/Dashboard';
 import LeadDetails from './Pages/LeadDetails';
 import Customers from './Pages/Customers';
 import Leads from './Pages/Leads';
-import { AuthContext } from './Contect/AuthContect';
+import { AuthContext } from './Contect/AuthContext';
 
 
 function App() {
