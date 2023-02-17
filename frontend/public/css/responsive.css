@@ -1,0 +1,14 @@
+@media screen and (max-width:  667px) {
+
+	.lg-sec {
+		height: auto;
+	}
+	
+	.bg-sec {
+		height: 24vh;
+	}
+
+	.text-xs-center {
+		text-align: center;
+	}
+}

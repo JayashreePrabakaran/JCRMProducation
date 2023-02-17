@@ -1,0 +1,5 @@
+{
+  "Status": [ "New", "Demo", "Follow up", "Customer", "Closed" ],
+  "PaymentType": [ "Cash", "UPI Transaction", "Online Payment", "Card" ],
+  "Subscription": ["3 Days","1 Month" ,"6 Month" ,"1 Year"]
+}
