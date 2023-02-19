@@ -6,10 +6,14 @@ import { getConfigurations, getCustomers, getDashboard as getDashboardData } fro
 const Dashboard = (props) => {
 
 
-	const [statuses, setStatuses] = useState([]);
-	const [users, setUsers] = useState([]);
 
 	const [customers, setCustomers] = useState([]);
+	const [users, setUsers] = useState([]);
+	const [dashboard, setDashboard] = useState({
+		events: [],
+		customers: [],
+		pending: []
+	});
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
@@ -20,6 +24,7 @@ const Dashboard = (props) => {
 		setLoading(true);
 		try {
 			const dashboard = await getDashboardData();
+			setDashboard(dashboard);
 		} catch (error) {
 			console.log("err", error);
 		}
@@ -52,20 +57,20 @@ const Dashboard = (props) => {
 						<div className="row text-center p-5">
 							<div className="col-12 col-md-4">
 								<h5 className="my-3"><i className="fa fa-send-o me-2"></i> Events Today</h5>
-								<div className="card border">
-									<h1 className="py-5 font-size-64 text-success">20</h1>
+								<div className="card border" style={{ height: "265px" }}>
+									<h1 className="py-5 font-size-64 text-success">{dashboard.events.length}</h1>
 								</div>
 							</div>
 							<div className="col-12 col-md-4">
 								<h5 className="my-3"><i className="fa fa-clock-o me-2"></i> Pending</h5>
-								<div className="card border">
-									<h1 className="py-5 font-size-64 text-warning">5</h1>
+								<div className="card border" style={{ height: "265px" }}>
+									<h1 className="py-5 font-size-64 text-warning">{dashboard.pending.length}</h1>
 								</div>
 							</div>
 							<div className="col-12 col-md-4">
 								<h5 className="my-3"><i className="fa fa-users me-2"></i> Customers</h5>
 								<div className="card border" style={{ height: "265px" }}>
-									<h1 className="py-5 font-size-64 text-warning">5</h1>
+									<h1 className="py-5 font-size-64 text-warning">{dashboard.customers.length}</h1>
 								</div>
 							</div>
 						</div>
@@ -103,7 +108,7 @@ const Dashboard = (props) => {
 																		<td>{customer.Address}</td>
 																		<td>{customer.Phone}</td>
 																		<td>{customer.Email}</td>
-																		<td>{customer.Assigned}</td>
+																		<td>{users.find(user => user._id === customer.Assigned)?.Name}</td>
 																		<td>{moment(customer.Date).format('YYYY-MM-DD')}</td>
 																		<td>{customer.Comments}</td>
 																		<td>

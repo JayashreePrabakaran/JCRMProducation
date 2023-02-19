@@ -57,7 +57,7 @@ const Leads = (props) => {
 	}
 
 	const selectLead = (lead) => {
-		let { _id: Id, Name, BusinessName, Phone, Email, Comments, Address, Status, Assigned, Date, WalkIn, CreatedByUser, ModifyByUser, CreatedDate, PaymentType, Subscription, PaidAmount, PendingAmount,FromDate,ToDate } = lead;
+		let { _id: Id, Name, BusinessName, Phone, Email, Comments, Address, Status, Assigned, Date, WalkIn, CreatedByUser, ModifyByUser, CreatedDate, PaymentType, Subscription, PaidAmount, PendingAmount, FromDate, ToDate } = lead;
 		setID(Id);
 		setName(Name);
 		setBusinessName(BusinessName);
@@ -119,6 +119,12 @@ const Leads = (props) => {
 				CreatedByUser: createdBy,
 				ModifyByUser: modifiedBy,
 				CreatedDate: createdDate,
+				paymentType,
+				paidAmount,
+				pendingAmount,
+				subscription,
+				fromDate,
+				toDate
 			}
 			const response = await updateLead(id, data);
 			if (response.data) {
@@ -200,7 +206,7 @@ const Leads = (props) => {
 																	<td>{lead.Address}</td>
 																	<td>{lead.Phone}</td>
 																	<td>{lead.Email}</td>
-																	<td>{lead.Assigned}</td>
+																	<td>{users.find(user => user._id === lead.Assigned)?.Name}</td>
 																	<td>{moment(lead.Date).format('YYYY-MM-DD')}</td>
 																	<td>{lead.Comments}</td>
 																	<td>
@@ -294,11 +300,11 @@ ${lead.Status}`} data-bs-toggle="modal" data-bs-target="#newLeadModal" onClick={
 												</div>
 												<div className="col-4 mb-3">
 													<label htmlFor="PaidAmount" className="form-label">Paid Amount</label>
-													<input className="form-control" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} id="PaidAmount" aria-describedby="PaidAmount"/>
+													<input className="form-control" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} id="PaidAmount" aria-describedby="PaidAmount" />
 												</div>
 												<div className="col-4 mb-3">
 													<label htmlFor="PendingAmount" className="form-label">Pending Amount</label>
-													<input className="form-control" value={pendingAmount} onChange={(e) => setPendingAmount(e.target.value)} id="PendingAmount" aria-describedby="PendingAmount"/>
+													<input className="form-control" value={pendingAmount} onChange={(e) => setPendingAmount(e.target.value)} id="PendingAmount" aria-describedby="PendingAmount" />
 												</div>
 												<div className="col-4 mb-3">
 													<label htmlFor="Subscription" className="form-label">Subscription</label>
@@ -321,7 +327,7 @@ ${lead.Status}`} data-bs-toggle="modal" data-bs-target="#newLeadModal" onClick={
 											</>
 											:
 											<></>
-                                    }
+									}
 									<div className="col-12 mb-3">
 										<label htmlFor="c_comments" className="form-label">Comments</label>
 										<textarea value={comments} className="form-control" onChange={(e) => setComments(e.target.value)} id="c_comments" aria-describedby="addressHelp"></textarea>

@@ -3,7 +3,7 @@ const LeadsHistory = require('../models/LeadsHistory');
 
 module.exports = async (req, res, next) => {
     let { name, businessName, phone, email, address, status, assigned, date, walkin, comments, CreatedByUser, ModifyByUser, CreatedDate } = req.body;
-    let { Id } = req.user;
+    let { _id: Id } = req.user;
     if (req.route.path === '/leads') {
         try {
             const leadsHistory = new LeadsHistory({

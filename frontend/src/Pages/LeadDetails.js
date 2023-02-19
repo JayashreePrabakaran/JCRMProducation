@@ -49,7 +49,7 @@ const Leads = (props) => {
 	}
 
 	const selectLead = (lead) => {
-		let { _id : Id, Name, BusinessName, Phone, Email, Address, Status, Assigned, Date, Walkin } = lead;
+		let { _id: Id, Name, BusinessName, Phone, Email, Address, Status, Assigned, Date, Walkin } = lead;
 		setID(Id);
 		setName(Name);
 		setBusinessName(BusinessName);
@@ -82,7 +82,9 @@ const Leads = (props) => {
 		}
 		const response = await updateLead(id, data);
 		if (response.data) {
-			console.log(response);
+			document.getElementById('btn-close-modal').click();
+			resetValues();
+			getAllLeads();
 		} else {
 			console.log("err", response);
 		}
@@ -130,7 +132,7 @@ const Leads = (props) => {
 																		<td>{lead.Address}</td>
 																		<td>{lead.Phone}</td>
 																		<td>{lead.Email}</td>
-																		<td>{lead.Assigned}</td>
+																		<td>{users.find(user => user._id === lead.Assigned)?.Name}</td>
 																		<td>{moment(lead.Date).format('YYYY-MM-DD')}</td>
 																		<td>{lead.Comments}</td>
 																		<td>
@@ -164,7 +166,7 @@ ${lead.Status}`} data-bs-toggle="modal" data-bs-target="#newLeadModal" onClick={
 					<div className="modal-content">
 						<div className="modal-header">
 							<h5 className="modal-title">{id ? "Update Lead" : "Add New Lead"}</h5>
-							<button type="button" className="btn-close" data-bs-dismiss="modal"  onClick={resetValues} aria-label="Close"></button>
+							<button type="button" id="btn-close-modal" className="btn-close" data-bs-dismiss="modal" onClick={resetValues} aria-label="Close"></button>
 						</div>
 						<div className="modal-body">
 							<form>

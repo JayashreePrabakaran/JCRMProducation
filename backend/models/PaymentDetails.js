@@ -13,6 +13,9 @@ const PaymentDetailsSchema = mongoose.Schema({
     Subscription: {
         type: String
     },
+    PendingAmount: {
+        type: String
+    },
     DurationFromDate: {
         type: Date
     },

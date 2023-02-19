@@ -1,14 +1,14 @@
 import axios from 'axios';
-import {BASE_URL} from './../Constant/config';
+import { BASE_URL } from './../Constant/config';
 import { getCookies } from './functions';
 
 axios.interceptors.request.use(function (config) {
     const token = getCookies().jcrm_token;
-    config.headers.Authorization =  token;
+    config.headers.Authorization = token;
     return config;
 });
 
-export async function getDashboard(latest=null) {
+export async function getDashboard() {
     try {
         const response = await axios.get(`${BASE_URL}/v1/dashboard`);
         return response.data;
@@ -18,7 +18,7 @@ export async function getDashboard(latest=null) {
 }
 
 
-export async function getConfigurations(latest=null) {
+export async function getConfigurations() {
     try {
         const response = await axios.get(`${BASE_URL}/v1/configurations`);
         return response.data;
@@ -27,7 +27,7 @@ export async function getConfigurations(latest=null) {
     }
 }
 
-export async function getLeads(latest=null) {
+export async function getLeads(latest = false) {
     try {
         const response = await axios.get(`${BASE_URL}/v1/leads?latest=${latest}`);
         return response.data;
@@ -55,7 +55,7 @@ export async function updateLead(id, data) {
 }
 
 
-export async function getCustomers(latest=null) {
+export async function getCustomers(latest = false) {
     try {
         const response = await axios.get(`${BASE_URL}/v1/customers?latest=${latest}`);
         return response.data;

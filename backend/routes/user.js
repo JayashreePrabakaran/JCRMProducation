@@ -2,7 +2,6 @@ const express = require('express');
 const moment = require('moment-timezone');
 const auth = require('./../middleware/auth');
 const writeLogs = require('./../middleware/writeLogs');
-const { request } = require('express');
 const Users = require('./../models/Users');
 const Leads = require('./../models/Leads');
 const PaymentDetails = require('./../models/PaymentDetails');
@@ -10,12 +9,19 @@ const PaymentDetails = require('./../models/PaymentDetails');
 const router = express.Router();
 
 router.get(`/dashboard`, auth, async (request, response) => {
-    console.log(request.user)
-    const { Name } = request.user;
-    const events = await Leads.find({ CreatedDate: new Date() } );
-    const pending = await Leads.find({ CreatedDate: { $lte: new Date() } });
-    const customers = await Leads.find({ Status: "Customer", Assigned: Name});
-    return response.status(200).send(true);
+    const { _id, Roles } = request.user;
+    let events, pending, customers;
+    if (Roles === 'user') {
+        events = await Leads.find({ CreatedDate: moment().format('YYYY-MM-DD'), Assigned: _id });
+        pending = await Leads.find({ CreatedDate: { $lte: new Date() }, Assigned: _id });
+        customers = await Leads.find({ Status: "Customer", Assigned: _id });
+    } else {
+        events = await Leads.find({ CreatedDate: moment().format('YYYY-MM-DD') });
+        pending = await Leads.find({ CreatedDate: { $lte: new Date() } });
+        customers = await Leads.find({ Status: "Customer" });
+    }
+
+    return response.status(200).send({ events, pending, customers });
 
 })
 
@@ -30,18 +36,28 @@ router.get(`/configurations`, auth, async (request, response) => {
 })
 
 router.get(`/leads`, auth, async (request, response) => {
-    let { latest } = request.params;
-    if (latest) {
+    const { _id, Roles } = request.user;
+    let { latest } = request.query;
+    if (latest == 'true') {
         try {
-
-            const recordsets = await Leads.find({}, null, { sort: { Date: -1 } }).limit(10);
+            let recordsets;
+            if (Roles === 'user') {
+                recordsets = await Leads.find({ Assigned: _id }, null, { sort: { Date: -1 } }).where({ Status: { $ne: "Customer" } }).limit(10);
+            } else {
+                recordsets = await Leads.find({}, null, { sort: { Date: -1 } }).where({ Status: { $ne: "Customer" } }).limit(10);
+            }
             return response.status(200).send(recordsets);
         } catch (err) {
             return response.status(500).send({ msg: err.message });
         }
     } else {
         try {
-            const recordsets  = await Leads.find({});
+            let recordsets;
+            if (Roles === 'user') {
+                recordsets = await Leads.find({ Assigned: _id }).where({ Status: { $ne: "Customer" } });
+            } else {
+                recordsets = await Leads.find({}).where({ Status: { $ne: "Customer" } });
+            }
             return response.status(200).send(recordsets);
         } catch (err) {
             return response.status(500).send({ msg: err.message });
@@ -50,10 +66,11 @@ router.get(`/leads`, auth, async (request, response) => {
 })
 
 router.get(`/customers`, auth, async (request, response) => {
-    let { latest } = request.params;
-    if (latest) {
+    const { _id, Roles } = request.user;
+    let { latest } = request.query;
+    if (latest == 'true') {
         try {
-            const recordsets = await Leads.find({}, null, { sort: { Date: -1 } }).where({ Status: "Customer" }).limit(10);
+            const recordsets = await Leads.find({ Assigned: _id }, null, { sort: { Date: -1 } }).where({ Status: "Customer" }).limit(10);
             return response.status(200).send(recordsets);
         } catch (err) {
             return response.status(500).send({ msg: err.message });
@@ -61,6 +78,11 @@ router.get(`/customers`, auth, async (request, response) => {
     } else {
         try {
             const recordsets = await Leads.find({}).where({ Status: "Customer" });
+            // const paymentPromise = recordsets.map(customer => {
+            //     return new Promise((resolve, reject) => {
+
+            //     })
+            // })
             return response.status(200).send(recordsets);
         } catch (err) {
             return response.status(500).send({ msg: err.message });
@@ -70,7 +92,7 @@ router.get(`/customers`, auth, async (request, response) => {
 
 router.post(`/leads`, auth, writeLogs, async (request, response) => {
     let { name, businessName, phone, email, address, status, assigned, date, walkin, comments } = request.body;
-    let { Id } = request.user;
+    let { _id: Id } = request.user;
     try {
 
         const leads = new Leads({
@@ -88,7 +110,8 @@ router.post(`/leads`, auth, writeLogs, async (request, response) => {
             ModifyByUser: Id,
             CreatedDate: moment()
         })
-        await leads.save();
+        const leadData = await leads.save();
+        console.log(leadData)
         return response.status(200).send({ msg: 'Lead Created.' });
     } catch (err) {
         return response.status(500).send({ msg: err.message });
@@ -96,9 +119,9 @@ router.post(`/leads`, auth, writeLogs, async (request, response) => {
 })
 
 router.put(`/leads/:id`, auth, writeLogs, async (request, response) => {
-    let { status, comments } = request.body;
+    let { status, comments, assigned, walkin, date, paymentType, paidAmount, pendingAmount, subscription, fromDate, toDate } = request.body;
     let { id } = request.params;
-    let { Id } = request.user;
+    let { _id: Id } = request.user;
     try {
         await Leads.findByIdAndUpdate(
             id,
@@ -106,7 +129,10 @@ router.put(`/leads/:id`, auth, writeLogs, async (request, response) => {
                 $set: {
                     Status: status,
                     Comments: comments,
-                    ModifyByUser: Id
+                    ModifyByUser: Id,
+                    Assigned: assigned,
+                    WalkIn: walkin ? 1 : 0,
+                    Date: moment(date).format('YYYY-MM-DD'),
                 }
             },
             { new: true }
@@ -114,14 +140,15 @@ router.put(`/leads/:id`, auth, writeLogs, async (request, response) => {
 
         if (status == 'Customer') {
             const paymentDetails = new PaymentDetails({
-                customerID: '2',
-                PaymentType: 'Cash',
-                PaidAmount: '100',
-                Subscription: '3 Days',
-                DurationFromDate: moment().format('YYYY-MM-DD'),
-                DurationToDate: moment().format('YYYY-MM-DD'),
+                customerID: String(id),
+                PaymentType: paymentType,
+                PaidAmount: paidAmount,
+                PendingAmount: pendingAmount,
+                Subscription: subscription,
+                DurationFromDate: moment(fromDate).format('YYYY-MM-DD'),
+                DurationToDate: moment(toDate).format('YYYY-MM-DD'),
             })
-            const userData = await paymentDetails.save();
+            await paymentDetails.save();
         }
 
         return response.status(200).send({ msg: 'Lead Updated.' });
